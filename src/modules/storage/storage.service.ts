@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, Logger } from '@nestjs/common';
-import { FirebaseConfig } from 'src/shared/context/firebase.service';
+import { FirebaseConfig } from '../../shared/context/firebase.service';
 
 @Injectable()
 export class StorageService {

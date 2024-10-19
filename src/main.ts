@@ -9,6 +9,11 @@ async function bootstrap() {
 
   app.useLogger(app.get(Logger));
 
+  app.enableCors({
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    origin: '*',
+  });
+
   const doc = new DocumentBuilder()
     .setTitle('Images API')
     .setDescription('API for managing images')
