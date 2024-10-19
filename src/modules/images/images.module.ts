@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { ImagesService } from './images.service';
 import { ImagesController } from './images.controller';
 import { StorageModule } from '../storage/storage.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { Thumbnail } from './entity/thumbnail.entity';
 import { LogsService } from '../../shared/context/logger.service';
 import { Image } from './entity/image.entity';

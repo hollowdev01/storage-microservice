@@ -9,14 +9,15 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { ImagesService } from './images.service';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
+
+import { ImagesService } from './images.service';
 import { imageFilter } from '../../utils/image-filters';
 import { FilterImages } from './dtos/filter-images.dto';
 import { GetUser } from '../../shared/decorators/get-user.decorator';
 //import { AuthGuard } from '@nestjs/passport';
 import { ApiUploadBullImages } from '../../shared/decorators/swagger-file.decorator';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('images')
 @ApiTags('Images')

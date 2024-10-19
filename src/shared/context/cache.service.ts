@@ -1,5 +1,6 @@
 import { CACHE_MANAGER, CacheStore } from '@nestjs/cache-manager';
 import { Injectable, Inject } from '@nestjs/common';
+
 import { LogsService } from './logger.service';
 
 @Injectable()
