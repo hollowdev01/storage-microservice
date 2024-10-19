@@ -22,7 +22,7 @@ export class Image {
   size: number;
 
   @CreateDateColumn()
-  uploadedAt: Date;
+  createdAt: Date;
 
   @Column({ nullable: true })
   uploadedBy?: string;

@@ -1,5 +1,5 @@
 export class FilterImages {
-  skip: number;
-  take: number;
-  allData: boolean;
+  skip?: number;
+  take?: number;
+  allData?: boolean;
 }

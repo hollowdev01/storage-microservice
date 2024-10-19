@@ -73,39 +73,34 @@ export class ImagesService {
   }
 
   async findAllImages({ allData, skip = 0, take = 10 }: FilterImages) {
-    try {
-      const cacheKey = `images:${skip}:${take}`;
-      const cachedData = await this.cacheService.get(cacheKey);
+    const cacheKey = `images:${skip}:${take}`;
+    const cachedData = await this.cacheService.get(cacheKey);
 
-      if (cachedData) {
-        this.logsService.logInfo(`Cache hit for key: ${cacheKey}`);
-        return cachedData;
-      }
-      this.logsService.logWarn(`Cache miss for key: ${cacheKey}`);
-      const where: FindManyOptions = {};
+    console.log(take, skip, allData);
 
-      if (skip) where.skip = skip;
-      if (take) where.take = take;
-      if (allData) delete where.take;
-
-      const [data = [], total = 0] = await this.imageRepository.findAndCount({
-        take: 0,
-        skip: 0,
-        relations: {
-          thumbnails: true,
-        },
-      });
-
-      await this.cacheService.set(cacheKey, data, this.TLL_CACHE);
-      this.logsService.logInfo(`Cached images for key: ${cacheKey}`);
-
-      return {
-        total,
-        data,
-      };
-    } catch (error) {
-      console.log(error);
+    if (cachedData) {
+      this.logsService.logInfo(`Cache hit for key: ${cacheKey}`);
+      return cachedData;
     }
+    this.logsService.logWarn(`Cache miss for key: ${cacheKey}`);
+    const filter: FindManyOptions<Image> = {
+      skip,
+      take,
+    };
+
+    if (allData) delete filter.take;
+
+    const [data = [], total = 0] = await this.imageRepository.findAndCount({
+      ...filter,
+    });
+
+    await this.cacheService.set(cacheKey, data, this.TLL_CACHE);
+    this.logsService.logInfo(`Cached images for key: ${cacheKey}`);
+
+    return {
+      total,
+      data,
+    };
   }
 
   async findById(id: string) {
