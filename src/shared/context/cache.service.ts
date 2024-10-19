@@ -9,9 +9,22 @@ export class CacheService {
     private readonly logsService: LogsService,
   ) {}
 
-  async set(key: string, value: any, ttl: number): Promise<void> {
-    await this.cacheManager.set(key, value, { ttl });
-    this.logsService.logInfo(`Value cached: ${key} with TTL of ${ttl} seconds`);
+  async set(key: string, value: any, ttl?: number): Promise<void> {
+    try {
+      const cache = await this.cacheManager.set(
+        key,
+        JSON.stringify(value),
+        ttl,
+      );
+      this.logsService.logInfo(
+        `Value cached: ${key} with TTL of ${ttl} seconds`,
+      );
+      return cache;
+    } catch (error) {
+      this.logsService.logError(
+        `Error save in cache error:${error} key:${key} ${new Date().toISOString()}`,
+      );
+    }
   }
 
   async get<T>(key: string): Promise<T | undefined> {
