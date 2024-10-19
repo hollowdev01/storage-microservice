@@ -7,6 +7,9 @@ export class Thumbnail {
   id: string;
 
   @Column()
+  fileName: string;
+
+  @Column()
   url: string;
 
   @Column({

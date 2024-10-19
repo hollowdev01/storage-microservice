@@ -15,7 +15,7 @@ export class ImagesService {
   constructor(
     @InjectRepository(Image)
     private imageRepository: Repository<Image>,
-    @InjectRepository(Image)
+    @InjectRepository(Thumbnail)
     private thumbnailRepository: Repository<Thumbnail>,
     private storageService: StorageService,
     private cacheService: CacheService,
@@ -52,15 +52,15 @@ export class ImagesService {
         url,
         size: image.size,
         uploadedBy: userId,
-        isActive: true,
       });
 
       const savedImage = await this.imageRepository.save(imageEntity);
 
-      for (const [url, type] of thumbnailUrls) {
+      for (const [url, fileName, type] of thumbnailUrls) {
         const thumbnailEntity = this.thumbnailRepository.create({
           url,
           type,
+          fileName,
           file: savedImage,
         });
         await this.thumbnailRepository.save(thumbnailEntity);
@@ -72,7 +72,7 @@ export class ImagesService {
     return uploadedImages;
   }
 
-  async findAllImages({ allData, skip, take }: FilterImages) {
+  async findAllImages({ allData, skip = 0, take = 10 }: FilterImages) {
     try {
       const cacheKey = `images:${skip}:${take}`;
       const cachedData = await this.cacheService.get(cacheKey);
@@ -91,6 +91,9 @@ export class ImagesService {
       const [data = [], total = 0] = await this.imageRepository.findAndCount({
         take: 0,
         skip: 0,
+        relations: {
+          thumbnails: true,
+        },
       });
 
       await this.cacheService.set(cacheKey, data, this.TLL_CACHE);
@@ -107,6 +110,7 @@ export class ImagesService {
 
   async findById(id: string) {
     const cacheKey = `image:${id}`;
+
     const cachedImage = await this.cacheService.get(cacheKey);
 
     if (cachedImage) {
@@ -115,7 +119,7 @@ export class ImagesService {
     }
     this.logsService.logWarn(`Cache miss for image ID: ${id}`);
 
-    const image = this.imageRepository.findOne({
+    const image = await this.imageRepository.findOne({
       where: {
         id,
       },
@@ -125,7 +129,6 @@ export class ImagesService {
       this.logsService.logError(`Image not found: ${id}`);
       throw new NotFoundException('Image not found');
     }
-
     await this.cacheService.set(cacheKey, image, this.TLL_CACHE);
     this.logsService.logInfo(`Cached image ID: ${id}`);
     return image;
@@ -147,6 +150,12 @@ export class ImagesService {
     await this.cacheService.del(`images:*`);
     this.logsService.logInfo(`Deleted image ID: ${id} and cleared cache`);
 
+    this.storageService.deletedImageToStorage(image.fileName);
+
+    for (const thumbnail of image.thumbnails) {
+      await this.storageService.deletedImageToStorage(thumbnail.fileName);
+    }
+
     return this.imageRepository.delete(image.id);
   }
 
@@ -161,7 +170,7 @@ export class ImagesService {
     file: Express.Multer.File,
     originalFileName: string,
     mimetype: string,
-  ): Promise<[string, TypeThumbnail][]> {
+  ): Promise<[string, string, TypeThumbnail][]> {
     const thumbnailSizes = [
       { size: 200, type: TypeThumbnail.SMALL },
       { size: 400, type: TypeThumbnail.MEDIUM },
@@ -179,7 +188,7 @@ export class ImagesService {
       this.logsService.logInfo(
         `Uploaded thumbnail: ${type} for image: ${thumbnailFileName}`,
       );
-      return [url, type] as [string, TypeThumbnail];
+      return [url, thumbnailFileName, type] as [string, string, TypeThumbnail];
     });
 
     return await Promise.all(thumbnailPromises);

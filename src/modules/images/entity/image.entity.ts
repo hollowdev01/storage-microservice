@@ -12,13 +12,13 @@ export class Image {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column()
   url: string;
 
-  @Column({ nullable: true })
+  @Column()
   fileName: string;
 
-  @Column({ nullable: true })
+  @Column()
   size: number;
 
   @CreateDateColumn()
@@ -29,7 +29,6 @@ export class Image {
 
   @OneToMany(() => Thumbnail, (thumbnail) => thumbnail.file, {
     cascade: ['insert'],
-    eager: true,
   })
   thumbnails: Thumbnail[];
 }

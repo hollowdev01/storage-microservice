@@ -11,11 +11,7 @@ export class CacheService {
 
   async set(key: string, value: any, ttl?: number): Promise<void> {
     try {
-      const cache = await this.cacheManager.set(
-        key,
-        JSON.stringify(value),
-        ttl,
-      );
+      const cache = await this.cacheManager.set(key, value, ttl);
       this.logsService.logInfo(
         `Value cached: ${key} with TTL of ${ttl} seconds`,
       );
